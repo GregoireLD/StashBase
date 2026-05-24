@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Scissors icon centered in the safe zone (72dp centered in 108dp → offset 18dp) -->
+    <group android:translateX="18" android:translateY="18">
+        <!-- Blade top-left to bottom-right -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M20,16 C17,16 14,18 13,21 C12,24 13,27 15,29 L34,48 L28,54 C26,52 23,51 20,52 C14,54 11,60 13,66 C15,72 21,75 27,73 C33,71 36,65 34,59 L40,53 L46,59 C44,65 47,71 53,73 C59,75 65,72 67,66 C69,60 66,54 60,52 C57,51 54,52 52,54 L46,48 L57,37 L57,22 L42,37 L26,21 C24,19 22,16 20,16 Z M20,56 C23,56 26,59 26,62 C26,65 23,68 20,68 C17,68 14,65 14,62 C14,59 17,56 20,56 Z M60,56 C63,56 66,59 66,62 C66,65 63,68 60,68 C57,68 54,65 54,62 C54,59 57,56 60,56 Z" />
+    </group>
+</vector>
