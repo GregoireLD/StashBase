@@ -1,0 +1,2 @@
+-keep class com.stashbase.data.local.entity.** { *; }
+-keepattributes *Annotation*
