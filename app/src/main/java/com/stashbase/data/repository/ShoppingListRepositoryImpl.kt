@@ -39,7 +39,7 @@ class ShoppingListRepositoryImpl @Inject constructor(
     override suspend fun deleteChecked() = shoppingListDao.deleteChecked()
 
     override suspend fun generateFromProjectDeficits(projectId: Long) {
-        val project = projectDao.getById(projectId).first() ?: return
+        projectDao.getById(projectId).first() ?: return
         val bomEntries = projectDao.getBomEntries(projectId).first()
         bomEntries.forEach { entry ->
             val allocated = projectDao.getAllocatedQuantity(entry.materialId, excludeProjectId = projectId).first()

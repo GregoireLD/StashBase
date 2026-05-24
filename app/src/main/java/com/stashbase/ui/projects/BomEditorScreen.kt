@@ -38,7 +38,7 @@ data class BomEditorUiState(
 
 @HiltViewModel
 class BomEditorViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val projectRepository: ProjectRepository,
     private val materialRepository: MaterialRepository,
     private val shoppingListRepository: ShoppingListRepository,
@@ -75,10 +75,8 @@ class BomEditorViewModel @Inject constructor(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BomEditorScreen(
-    projectId: Long,
     onBack: () -> Unit,
     onGenerateShopping: () -> Unit,
     viewModel: BomEditorViewModel = hiltViewModel(),

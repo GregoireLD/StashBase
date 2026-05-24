@@ -28,7 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProjectDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val projectRepository: ProjectRepository,
 ) : ViewModel() {
 

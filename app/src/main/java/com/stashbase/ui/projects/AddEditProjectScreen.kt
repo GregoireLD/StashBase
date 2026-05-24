@@ -35,7 +35,7 @@ data class AddEditProjectUiState(
 
 @HiltViewModel
 class AddEditProjectViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val projectRepository: ProjectRepository,
 ) : ViewModel() {
 

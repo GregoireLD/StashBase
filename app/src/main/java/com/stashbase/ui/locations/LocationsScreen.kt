@@ -37,7 +37,7 @@ class LocationsViewModel @Inject constructor(
 
 @HiltViewModel
 class AddEditLocationViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val repository: StorageLocationRepository,
 ) : ViewModel() {
 

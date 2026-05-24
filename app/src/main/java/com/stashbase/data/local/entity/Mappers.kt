@@ -21,6 +21,7 @@ fun MaterialEntity.toDomain(locationName: String? = null, allocatedQuantity: Dou
         tags = if (tags.isBlank()) emptyList() else tags.split(",").map { it.trim() },
         lowStockThreshold = lowStockThreshold,
         createdAtMillis = createdAtMillis,
+        allocatedQuantity = allocatedQuantity,
     )
 
 fun Material.toEntity(): MaterialEntity =

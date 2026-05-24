@@ -18,9 +18,8 @@ data class Material(
     val tags: List<String> = emptyList(),
     val lowStockThreshold: Double? = null,
     val createdAtMillis: Long = System.currentTimeMillis(),
+    val allocatedQuantity: Double = 0.0,
 ) {
-    val allocatedQuantity: Double = 0.0
-
     val availableQuantity: Double get() = quantity - allocatedQuantity
 
     val isLowStock: Boolean get() = lowStockThreshold != null && availableQuantity <= lowStockThreshold

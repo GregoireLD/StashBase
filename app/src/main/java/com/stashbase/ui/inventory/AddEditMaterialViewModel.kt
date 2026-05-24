@@ -32,7 +32,7 @@ data class AddEditMaterialUiState(
 
 @HiltViewModel
 class AddEditMaterialViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val materialRepository: MaterialRepository,
     private val locationRepository: StorageLocationRepository,
 ) : ViewModel() {

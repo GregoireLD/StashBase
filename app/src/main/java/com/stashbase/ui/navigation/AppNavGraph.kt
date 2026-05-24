@@ -87,7 +87,6 @@ fun AppNavGraph(navController: NavHostController, modifier: androidx.compose.ui.
         ) { backStack ->
             val projectId = backStack.arguments!!.getLong("projectId")
             BomEditorScreen(
-                projectId = projectId,
                 onBack = { navController.popBackStack() },
                 onGenerateShopping = {
                     navController.navigate(Screen.Shopping.route) {

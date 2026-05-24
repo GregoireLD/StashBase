@@ -38,7 +38,7 @@ data class AddEditToolUiState(
 
 @HiltViewModel
 class AddEditToolViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val toolRepository: ToolRepository,
     private val locationRepository: StorageLocationRepository,
 ) : ViewModel() {
