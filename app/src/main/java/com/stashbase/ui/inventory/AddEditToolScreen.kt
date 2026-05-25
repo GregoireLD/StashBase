@@ -43,7 +43,7 @@ class AddEditToolViewModel @Inject constructor(
     private val locationRepository: StorageLocationRepository,
 ) : ViewModel() {
 
-    private val toolId: Long? = savedStateHandle.get<Long>("toolId")
+    private val toolId: Long? = savedStateHandle.get<Long>("toolId")?.takeIf { it != -1L }
     private val _state = MutableStateFlow(AddEditToolUiState())
     val uiState: StateFlow<AddEditToolUiState> = _state.asStateFlow()
 

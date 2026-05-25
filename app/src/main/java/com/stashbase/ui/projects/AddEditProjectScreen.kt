@@ -39,7 +39,7 @@ class AddEditProjectViewModel @Inject constructor(
     private val projectRepository: ProjectRepository,
 ) : ViewModel() {
 
-    private val projectId: Long? = savedStateHandle.get<Long>("projectId")
+    private val projectId: Long? = savedStateHandle.get<Long>("projectId")?.takeIf { it != -1L }
     private val _state = MutableStateFlow(AddEditProjectUiState())
     val uiState: StateFlow<AddEditProjectUiState> = _state.asStateFlow()
 

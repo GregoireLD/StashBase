@@ -37,7 +37,7 @@ class AddEditMaterialViewModel @Inject constructor(
     private val locationRepository: StorageLocationRepository,
 ) : ViewModel() {
 
-    private val materialId: Long? = savedStateHandle.get<Long>("materialId")
+    private val materialId: Long? = savedStateHandle.get<Long>("materialId")?.takeIf { it != -1L }
 
     private val _state = MutableStateFlow(AddEditMaterialUiState())
     val uiState: StateFlow<AddEditMaterialUiState> = _state.asStateFlow()

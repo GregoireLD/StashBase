@@ -41,7 +41,7 @@ class AddEditLocationViewModel @Inject constructor(
     private val repository: StorageLocationRepository,
 ) : ViewModel() {
 
-    private val locationId: Long? = savedStateHandle.get<Long>("locationId")
+    private val locationId: Long? = savedStateHandle.get<Long>("locationId")?.takeIf { it != -1L }
     private val _name = MutableStateFlow("")
     private val _description = MutableStateFlow("")
     private val _parentId = MutableStateFlow<Long?>(null)
