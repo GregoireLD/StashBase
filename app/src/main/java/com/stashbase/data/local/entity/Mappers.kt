@@ -173,3 +173,32 @@ fun ShoppingListItem.toEntity(): ShoppingListItemEntity =
         sourceMaterialId = sourceMaterialId,
         createdAtMillis = createdAtMillis,
     )
+
+fun FinishedItemEntity.toDomain(projectName: String = ""): com.stashbase.domain.model.FinishedItem =
+    com.stashbase.domain.model.FinishedItem(
+        id = id,
+        projectId = projectId,
+        projectName = projectName,
+        name = name,
+        quantity = quantity,
+        unit = MaterialUnit.valueOf(unit),
+        status = com.stashbase.domain.model.FinishedItemStatus.valueOf(status),
+        sellingPrice = sellingPrice,
+        notes = notes,
+        photoPath = photoPath,
+        createdAtMillis = createdAtMillis,
+    )
+
+fun com.stashbase.domain.model.FinishedItem.toEntity(): FinishedItemEntity =
+    FinishedItemEntity(
+        id = id,
+        projectId = projectId,
+        name = name,
+        quantity = quantity,
+        unit = unit.name,
+        status = status.name,
+        sellingPrice = sellingPrice,
+        notes = notes,
+        photoPath = photoPath,
+        createdAtMillis = createdAtMillis,
+    )

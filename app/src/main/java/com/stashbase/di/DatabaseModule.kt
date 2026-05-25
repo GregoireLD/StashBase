@@ -18,6 +18,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): StashDatabase =
         Room.databaseBuilder(context, StashDatabase::class.java, StashDatabase.DATABASE_NAME)
+            .addMigrations(StashDatabase.MIGRATION_1_2)
             .build()
 
     @Provides
@@ -34,4 +35,7 @@ object DatabaseModule {
 
     @Provides
     fun provideShoppingListDao(db: StashDatabase) = db.shoppingListDao()
+
+    @Provides
+    fun provideFinishedItemDao(db: StashDatabase) = db.finishedItemDao()
 }

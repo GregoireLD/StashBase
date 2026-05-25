@@ -52,8 +52,8 @@ class AddEditMaterialViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true) }
             viewModelScope.launch {
                 materialRepository.getById(materialId).firstOrNull()?.let { m ->
-                    _state.update { _ ->
-                        AddEditMaterialUiState(
+                    _state.update { current ->
+                        current.copy(
                             name = m.name,
                             type = m.type,
                             brand = m.brand ?: "",

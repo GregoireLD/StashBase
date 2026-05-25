@@ -56,8 +56,8 @@ class AddEditToolViewModel @Inject constructor(
         if (toolId != null) {
             viewModelScope.launch {
                 toolRepository.getById(toolId).firstOrNull()?.let { t ->
-                    _state.update { _ ->
-                        AddEditToolUiState(
+                    _state.update { current ->
+                        current.copy(
                             name = t.name,
                             type = t.type,
                             brand = t.brand ?: "",

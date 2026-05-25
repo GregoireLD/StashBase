@@ -1,5 +1,6 @@
 package com.stashbase.ui.shopping
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,10 +43,25 @@ class ShoppingListViewModel @Inject constructor(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
+fun ShoppingListScreen(
+    onNavigateToProject: (Long) -> Unit = {},
+    viewModel: ShoppingListViewModel = hiltViewModel(),
+) {
     val items by viewModel.items.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     val checkedCount = items.count { it.isChecked }
+
+    // Group: project items first (sorted by project name), manual items last
+    val projectGroups = remember(items) {
+        items
+            .filter { it.sourceProjectId != null }
+            .groupBy { it.sourceProjectId!! }
+            .entries
+            .sortedBy { (_, v) -> v.first().sourceProjectName ?: "" }
+    }
+    val manualItems = remember(items) {
+        items.filter { it.sourceProjectId == null }
+    }
 
     Scaffold(
         topBar = {
@@ -72,22 +88,65 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
         ) {
             if (items.isEmpty()) {
                 item {
-                    Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Default.ShoppingCart, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Icon(
+                                Icons.Default.ShoppingCart,
+                                null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.outline,
+                            )
                             Text("Liste vide", color = MaterialTheme.colorScheme.outline)
                         }
                     }
                 }
             }
 
-            items(items, key = { it.id }) { item ->
-                ShoppingItemRow(
-                    item = item,
-                    onChecked = { viewModel.setChecked(item.id, it) },
-                    onDelete = { viewModel.delete(item.id) },
-                )
-                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+            // ── Project groups ─────────────────────────────────────────────────
+            projectGroups.forEach { (projectId, groupItems) ->
+                val projectName = groupItems.first().sourceProjectName ?: "Projet #$projectId"
+                item(key = "header_$projectId") {
+                    ProjectGroupHeader(
+                        projectName = projectName,
+                        onClick = { onNavigateToProject(projectId) },
+                    )
+                }
+                items(groupItems, key = { it.id }) { item ->
+                    ShoppingItemRow(
+                        item = item,
+                        onChecked = { viewModel.setChecked(item.id, it) },
+                        onDelete = { viewModel.delete(item.id) },
+                        showProjectName = false,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                }
+            }
+
+            // ── Manual items ───────────────────────────────────────────────────
+            if (manualItems.isNotEmpty()) {
+                item(key = "header_manual") {
+                    ProjectGroupHeader(
+                        projectName = "Courses libres",
+                        onClick = null,
+                    )
+                }
+                items(manualItems, key = { it.id }) { item ->
+                    ShoppingItemRow(
+                        item = item,
+                        onChecked = { viewModel.setChecked(item.id, it) },
+                        onDelete = { viewModel.delete(item.id) },
+                        showProjectName = false,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                }
             }
         }
     }
@@ -101,10 +160,47 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
 }
 
 @Composable
+private fun ProjectGroupHeader(projectName: String, onClick: (() -> Unit)?) {
+    val modifier = if (onClick != null)
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+    else
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = projectName,
+            style = MaterialTheme.typography.titleSmall,
+            color = if (onClick != null)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (onClick != null) {
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = "Aller au projet",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
+
+@Composable
 private fun ShoppingItemRow(
     item: ShoppingListItem,
     onChecked: (Boolean) -> Unit,
     onDelete: () -> Unit,
+    showProjectName: Boolean = true,
 ) {
     ListItem(
         headlineContent = {
@@ -118,10 +214,17 @@ private fun ShoppingItemRow(
         supportingContent = {
             Column {
                 if (item.quantity != null && item.unit != null) {
-                    Text("${item.quantity} ${item.unit.abbreviation}", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "${item.quantity} ${item.unit.abbreviation}",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
-                if (item.sourceProjectName != null) {
-                    Text("Projet: ${item.sourceProjectName}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                if (showProjectName && item.sourceProjectName != null) {
+                    Text(
+                        item.sourceProjectName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         },
@@ -130,7 +233,11 @@ private fun ShoppingItemRow(
         },
         trailingContent = {
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error)
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Supprimer",
+                    tint = MaterialTheme.colorScheme.error,
+                )
             }
         }
     )
@@ -152,9 +259,10 @@ private fun AddShoppingItemDialog(onConfirm: (String) -> Unit, onDismiss: () -> 
             )
         },
         confirmButton = {
-            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim()) }, enabled = name.isNotBlank()) {
-                Text("Ajouter")
-            }
+            TextButton(
+                onClick = { if (name.isNotBlank()) onConfirm(name.trim()) },
+                enabled = name.isNotBlank(),
+            ) { Text("Ajouter") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } }
     )

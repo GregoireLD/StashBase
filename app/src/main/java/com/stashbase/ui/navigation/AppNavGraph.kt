@@ -6,11 +6,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.stashbase.ui.inventory.AddEditFinishedItemScreen
 import com.stashbase.ui.inventory.AddEditMaterialScreen
 import com.stashbase.ui.inventory.InventoryScreen
 import com.stashbase.ui.locations.LocationsScreen
 import com.stashbase.ui.projects.AddEditProjectScreen
-import com.stashbase.ui.projects.BomEditorScreen
 import com.stashbase.ui.projects.ProjectDetailScreen
 import com.stashbase.ui.projects.ProjectsScreen
 import com.stashbase.ui.shopping.ShoppingListScreen
@@ -25,6 +25,8 @@ fun AppNavGraph(navController: NavHostController, modifier: androidx.compose.ui.
                 onEditMaterial = { id -> navController.navigate(Screen.AddEditMaterial.createRoute(id)) },
                 onAddTool = { navController.navigate(Screen.AddEditTool.createRoute()) },
                 onEditTool = { id -> navController.navigate(Screen.AddEditTool.createRoute(id)) },
+                onAddFinishedItem = { navController.navigate(Screen.AddEditFinishedItem.createRoute()) },
+                onEditFinishedItem = { id -> navController.navigate(Screen.AddEditFinishedItem.createRoute(id)) },
             )
         }
 
@@ -66,7 +68,11 @@ fun AppNavGraph(navController: NavHostController, modifier: androidx.compose.ui.
                 projectId = projectId,
                 onBack = { navController.popBackStack() },
                 onEdit = { navController.navigate(Screen.AddEditProject.createRoute(projectId)) },
-                onOpenBom = { navController.navigate(Screen.BomEditor.createRoute(projectId)) },
+                onGenerateShopping = {
+                    navController.navigate(Screen.Shopping.route) {
+                        popUpTo(Screen.Projects.route)
+                    }
+                },
             )
         }
 
@@ -82,22 +88,22 @@ fun AppNavGraph(navController: NavHostController, modifier: androidx.compose.ui.
         }
 
         composable(
-            route = Screen.BomEditor.route,
-            arguments = listOf(navArgument("projectId") { type = NavType.LongType })
+            route = Screen.AddEditFinishedItem.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType })
         ) { backStack ->
-            val projectId = backStack.arguments!!.getLong("projectId")
-            BomEditorScreen(
+            val itemId = backStack.arguments?.getLong("itemId") ?: -1L
+            AddEditFinishedItemScreen(
+                itemId = if (itemId == -1L) null else itemId,
                 onBack = { navController.popBackStack() },
-                onGenerateShopping = {
-                    navController.navigate(Screen.Shopping.route) {
-                        popUpTo(Screen.Projects.route)
-                    }
-                },
             )
         }
 
         composable(Screen.Shopping.route) {
-            ShoppingListScreen()
+            ShoppingListScreen(
+                onNavigateToProject = { projectId ->
+                    navController.navigate(Screen.ProjectDetail.createRoute(projectId))
+                },
+            )
         }
 
         composable(Screen.Locations.route) {

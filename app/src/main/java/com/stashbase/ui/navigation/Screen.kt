@@ -21,6 +21,9 @@ sealed class Screen(val route: String) {
     data object AddEditTool : Screen("tool/edit/{toolId}") {
         fun createRoute(toolId: Long = -1L) = "tool/edit/$toolId"
     }
+    data object AddEditFinishedItem : Screen("finished/edit/{itemId}") {
+        fun createRoute(itemId: Long = -1L) = "finished/edit/$itemId"
+    }
 
     // Project sub-screens
     data object ProjectDetail : Screen("project/{projectId}") {

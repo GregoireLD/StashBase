@@ -40,7 +40,17 @@ enum class ToolType(val label: String) {
     BRUSH("Pinceau"),
     KNIFE("Couteau / Cutter"),
     CLAMP("Serre-joint / Pince"),
+    PATTERN("Patron"),
+    GENERIC_TOOL("Outil"),
     OTHER("Autre")
+}
+
+enum class FinishedItemStatus(val label: String) {
+    PERSONAL_USE("Usage personnel"),
+    GIFT("Cadeau"),
+    FOR_SALE("À vendre"),
+    SOLD("Vendu"),
+    DONATED("Donné")
 }
 
 enum class ToolCondition(val label: String) {

@@ -26,4 +26,7 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindShoppingListRepository(impl: ShoppingListRepositoryImpl): ShoppingListRepository
+
+    @Binds @Singleton
+    abstract fun bindFinishedItemRepository(impl: FinishedItemRepositoryImpl): FinishedItemRepository
 }

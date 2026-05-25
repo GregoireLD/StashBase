@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stashbase.domain.model.FinishedItem
 import com.stashbase.domain.model.Material
 import com.stashbase.domain.model.MaterialType
 import com.stashbase.domain.model.Tool
@@ -26,31 +27,31 @@ fun InventoryScreen(
     onEditMaterial: (Long) -> Unit,
     onAddTool: () -> Unit,
     onEditTool: (Long) -> Unit,
+    onAddFinishedItem: () -> Unit,
+    onEditFinishedItem: (Long) -> Unit,
     viewModel: InventoryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Inventaire") },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filtres")
-                    }
-                }
-            )
+            TopAppBar(title = { Text("Inventaire") })
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { if (state.tab == InventoryTab.MATERIALS) onAddMaterial() else onAddTool() }
+                onClick = {
+                    when (state.tab) {
+                        InventoryTab.MATERIALS -> onAddMaterial()
+                        InventoryTab.TOOLS -> onAddTool()
+                        InventoryTab.FINISHED_ITEMS -> onAddFinishedItem()
+                    }
+                }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Ajouter")
             }
         }
     ) { padding ->
         Column(Modifier.padding(padding)) {
-            // Search bar
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = viewModel::setSearch,
@@ -69,7 +70,6 @@ fun InventoryScreen(
                 singleLine = true,
             )
 
-            // Tabs
             TabRow(selectedTabIndex = state.tab.ordinal) {
                 Tab(
                     selected = state.tab == InventoryTab.MATERIALS,
@@ -80,6 +80,11 @@ fun InventoryScreen(
                     selected = state.tab == InventoryTab.TOOLS,
                     onClick = { viewModel.setTab(InventoryTab.TOOLS) },
                     text = { Text("Outils (${state.tools.size})") }
+                )
+                Tab(
+                    selected = state.tab == InventoryTab.FINISHED_ITEMS,
+                    onClick = { viewModel.setTab(InventoryTab.FINISHED_ITEMS) },
+                    text = { Text("Réalisations (${state.finishedItems.size})") }
                 )
             }
 
@@ -95,6 +100,11 @@ fun InventoryScreen(
                     tools = state.tools,
                     onEdit = onEditTool,
                     onDelete = viewModel::deleteTool,
+                )
+                InventoryTab.FINISHED_ITEMS -> FinishedItemsList(
+                    items = state.finishedItems,
+                    onEdit = onEditFinishedItem,
+                    onDelete = viewModel::deleteFinishedItem,
                 )
             }
         }
@@ -280,6 +290,84 @@ private fun ToolCard(
                         leadingIcon = { Icon(Icons.Default.Delete, null) },
                         onClick = { showMenu = false; onDelete(tool.id) }
                     )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun FinishedItemsList(
+    items: List<FinishedItem>,
+    onEdit: (Long) -> Unit,
+    onDelete: (Long) -> Unit,
+) {
+    LazyColumn {
+        if (items.isEmpty()) {
+            item {
+                Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                    Text("Aucune réalisation", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                }
+            }
+        }
+        items(items, key = { it.id }) { item ->
+            FinishedItemCard(item = item, onEdit = onEdit, onDelete = onDelete)
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+        }
+    }
+}
+
+@Composable
+private fun FinishedItemCard(
+    item: FinishedItem,
+    onEdit: (Long) -> Unit,
+    onDelete: (Long) -> Unit,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    ListItem(
+        headlineContent = { Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        supportingContent = {
+            Column {
+                Text(
+                    text = buildString {
+                        append(item.status.label)
+                        if (item.projectName.isNotBlank()) append(" · ${item.projectName}")
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (item.sellingPrice != null) {
+                    Text(
+                        text = "Prix : ${item.sellingPrice} €",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "${item.quantity} ${item.unit.abbreviation}",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                    }
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Modifier") },
+                            leadingIcon = { Icon(Icons.Default.Edit, null) },
+                            onClick = { showMenu = false; onEdit(item.id) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Supprimer") },
+                            leadingIcon = { Icon(Icons.Default.Delete, null) },
+                            onClick = { showMenu = false; onDelete(item.id) }
+                        )
+                    }
                 }
             }
         }
