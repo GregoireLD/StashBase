@@ -3,12 +3,11 @@ package com.stashbase.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "projects")
-data class ProjectEntity(
+@Entity(tableName = "blueprints")
+data class BlueprintEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val description: String? = null,
-    val status: String = "IDEA",
     val category: String? = null,
     val photoPath: String? = null,
     val externalLinks: String = "[]",

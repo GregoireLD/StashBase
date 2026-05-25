@@ -12,21 +12,11 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
 
-    @Binds @Singleton
-    abstract fun bindMaterialRepository(impl: MaterialRepositoryImpl): MaterialRepository
-
-    @Binds @Singleton
-    abstract fun bindToolRepository(impl: ToolRepositoryImpl): ToolRepository
-
-    @Binds @Singleton
-    abstract fun bindStorageLocationRepository(impl: StorageLocationRepositoryImpl): StorageLocationRepository
-
-    @Binds @Singleton
-    abstract fun bindProjectRepository(impl: ProjectRepositoryImpl): ProjectRepository
-
-    @Binds @Singleton
-    abstract fun bindShoppingListRepository(impl: ShoppingListRepositoryImpl): ShoppingListRepository
-
-    @Binds @Singleton
-    abstract fun bindFinishedItemRepository(impl: FinishedItemRepositoryImpl): FinishedItemRepository
+    @Binds @Singleton abstract fun bindMaterialRepository(impl: MaterialRepositoryImpl): MaterialRepository
+    @Binds @Singleton abstract fun bindToolRepository(impl: ToolRepositoryImpl): ToolRepository
+    @Binds @Singleton abstract fun bindStorageLocationRepository(impl: StorageLocationRepositoryImpl): StorageLocationRepository
+    @Binds @Singleton abstract fun bindBlueprintRepository(impl: BlueprintRepositoryImpl): BlueprintRepository
+    @Binds @Singleton abstract fun bindRunRepository(impl: RunRepositoryImpl): RunRepository
+    @Binds @Singleton abstract fun bindShoppingListRepository(impl: ShoppingListRepositoryImpl): ShoppingListRepository
+    @Binds @Singleton abstract fun bindFinishedItemRepository(impl: FinishedItemRepositoryImpl): FinishedItemRepository
 }

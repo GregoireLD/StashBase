@@ -44,23 +44,23 @@ class ShoppingListViewModel @Inject constructor(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(
-    onNavigateToProject: (Long) -> Unit = {},
+    onNavigateToRun: (Long) -> Unit = {},
     viewModel: ShoppingListViewModel = hiltViewModel(),
 ) {
     val items by viewModel.items.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     val checkedCount = items.count { it.isChecked }
 
-    // Group: project items first (sorted by project name), manual items last
-    val projectGroups = remember(items) {
+    // Group: run items first (sorted by run name), manual items last
+    val runGroups = remember(items) {
         items
-            .filter { it.sourceProjectId != null }
-            .groupBy { it.sourceProjectId!! }
+            .filter { it.sourceRunId != null }
+            .groupBy { it.sourceRunId!! }
             .entries
-            .sortedBy { (_, v) -> v.first().sourceProjectName ?: "" }
+            .sortedBy { (_, v) -> v.first().sourceRunName ?: "" }
     }
     val manualItems = remember(items) {
-        items.filter { it.sourceProjectId == null }
+        items.filter { it.sourceRunId == null }
     }
 
     Scaffold(
@@ -110,13 +110,13 @@ fun ShoppingListScreen(
                 }
             }
 
-            // ── Project groups ─────────────────────────────────────────────────
-            projectGroups.forEach { (projectId, groupItems) ->
-                val projectName = groupItems.first().sourceProjectName ?: "Projet #$projectId"
-                item(key = "header_$projectId") {
-                    ProjectGroupHeader(
-                        projectName = projectName,
-                        onClick = { onNavigateToProject(projectId) },
+            // ── Run groups ─────────────────────────────────────────────────────
+            runGroups.forEach { (runId, groupItems) ->
+                val runName = groupItems.first().sourceRunName ?: "Projet #$runId"
+                item(key = "header_$runId") {
+                    RunGroupHeader(
+                        runName = runName,
+                        onClick = { onNavigateToRun(runId) },
                     )
                 }
                 items(groupItems, key = { it.id }) { item ->
@@ -124,7 +124,7 @@ fun ShoppingListScreen(
                         item = item,
                         onChecked = { viewModel.setChecked(item.id, it) },
                         onDelete = { viewModel.delete(item.id) },
-                        showProjectName = false,
+                        showRunName = false,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                 }
@@ -133,8 +133,8 @@ fun ShoppingListScreen(
             // ── Manual items ───────────────────────────────────────────────────
             if (manualItems.isNotEmpty()) {
                 item(key = "header_manual") {
-                    ProjectGroupHeader(
-                        projectName = "Courses libres",
+                    RunGroupHeader(
+                        runName = "Courses libres",
                         onClick = null,
                     )
                 }
@@ -143,7 +143,7 @@ fun ShoppingListScreen(
                         item = item,
                         onChecked = { viewModel.setChecked(item.id, it) },
                         onDelete = { viewModel.delete(item.id) },
-                        showProjectName = false,
+                        showRunName = false,
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                 }
@@ -160,7 +160,7 @@ fun ShoppingListScreen(
 }
 
 @Composable
-private fun ProjectGroupHeader(projectName: String, onClick: (() -> Unit)?) {
+private fun RunGroupHeader(runName: String, onClick: (() -> Unit)?) {
     val modifier = if (onClick != null)
         Modifier
             .fillMaxWidth()
@@ -177,7 +177,7 @@ private fun ProjectGroupHeader(projectName: String, onClick: (() -> Unit)?) {
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
-            text = projectName,
+            text = runName,
             style = MaterialTheme.typography.titleSmall,
             color = if (onClick != null)
                 MaterialTheme.colorScheme.primary
@@ -200,7 +200,7 @@ private fun ShoppingItemRow(
     item: ShoppingListItem,
     onChecked: (Boolean) -> Unit,
     onDelete: () -> Unit,
-    showProjectName: Boolean = true,
+    showRunName: Boolean = true,
 ) {
     ListItem(
         headlineContent = {
@@ -219,9 +219,9 @@ private fun ShoppingItemRow(
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
-                if (showProjectName && item.sourceProjectName != null) {
+                if (showRunName && item.sourceRunName != null) {
                     Text(
-                        item.sourceProjectName,
+                        item.sourceRunName,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )

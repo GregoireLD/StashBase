@@ -2,8 +2,8 @@ package com.stashbase.domain.model
 
 data class FinishedItem(
     val id: Long = 0,
-    val projectId: Long,
-    val projectName: String = "",
+    val runId: Long? = null,
+    val runName: String? = null,
     val name: String,
     val quantity: Double = 1.0,
     val unit: MaterialUnit = MaterialUnit.PIECE,

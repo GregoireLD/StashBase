@@ -10,5 +10,5 @@ interface ShoppingListRepository {
     suspend fun setChecked(id: Long, checked: Boolean)
     suspend fun delete(id: Long)
     suspend fun deleteChecked()
-    suspend fun generateFromProjectDeficits(projectId: Long)
+    suspend fun generateFromRunDeficits(runId: Long)
 }

@@ -21,8 +21,13 @@ interface MaterialDao {
     @Query("SELECT * FROM materials WHERE lowStockThreshold IS NOT NULL AND quantity <= lowStockThreshold ORDER BY name ASC")
     fun getLowStock(): Flow<List<MaterialEntity>>
 
-    @Query("SELECT COALESCE(SUM(be.requiredQuantity), 0.0) FROM bom_entries be WHERE be.materialId = :materialId AND (:excludeProjectId IS NULL OR be.projectId != :excludeProjectId)")
-    fun getAllocatedQuantity(materialId: Long, excludeProjectId: Long?): Flow<Double>
+    @Query("""
+        SELECT COALESCE(SUM(rbe.plannedQuantity), 0.0)
+        FROM run_bom_entries rbe
+        JOIN runs r ON rbe.runId = r.id
+        WHERE rbe.actualMaterialId = :materialId AND r.status = 'IN_PROGRESS'
+    """)
+    fun getAllocatedQuantity(materialId: Long): Flow<Double>
 
     @Upsert
     suspend fun upsert(material: MaterialEntity): Long

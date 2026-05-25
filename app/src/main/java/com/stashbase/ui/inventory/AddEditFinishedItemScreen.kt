@@ -62,34 +62,40 @@ fun AddEditFinishedItemScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            // Project selector
-            if (state.projects.isNotEmpty()) {
-                var projectExpanded by remember { mutableStateOf(false) }
+            // Run selector (optional)
+            if (state.runs.isNotEmpty()) {
+                var runExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
-                    expanded = projectExpanded,
-                    onExpandedChange = { projectExpanded = it },
+                    expanded = runExpanded,
+                    onExpandedChange = { runExpanded = it },
                 ) {
                     OutlinedTextField(
-                        value = state.projects.find { it.id == state.projectId }?.name ?: "Choisir un projet",
+                        value = state.runs.find { it.id == state.runId }?.name ?: "Aucun projet lié",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Projet *") },
-                        isError = state.projectError,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(projectExpanded) },
+                        label = { Text("Projet lié (optionnel)") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(runExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable),
                     )
                     ExposedDropdownMenu(
-                        expanded = projectExpanded,
-                        onDismissRequest = { projectExpanded = false },
+                        expanded = runExpanded,
+                        onDismissRequest = { runExpanded = false },
                     ) {
-                        state.projects.forEach { project ->
+                        DropdownMenuItem(
+                            text = { Text("Aucun") },
+                            onClick = {
+                                viewModel.update { copy(runId = null) }
+                                runExpanded = false
+                            }
+                        )
+                        state.runs.forEach { run ->
                             DropdownMenuItem(
-                                text = { Text(project.name) },
+                                text = { Text(run.name) },
                                 onClick = {
-                                    viewModel.update { copy(projectId = project.id, projectError = false) }
-                                    projectExpanded = false
+                                    viewModel.update { copy(runId = run.id) }
+                                    runExpanded = false
                                 }
                             )
                         }

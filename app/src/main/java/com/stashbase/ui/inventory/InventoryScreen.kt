@@ -332,7 +332,7 @@ private fun FinishedItemCard(
                 Text(
                     text = buildString {
                         append(item.status.label)
-                        if (item.projectName.isNotBlank()) append(" · ${item.projectName}")
+                        if (!item.runName.isNullOrBlank()) append(" · ${item.runName}")
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

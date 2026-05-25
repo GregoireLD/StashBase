@@ -60,11 +60,8 @@ enum class ToolCondition(val label: String) {
     BROKEN("Cassé / HS")
 }
 
-enum class ProjectStatus(val label: String) {
-    IDEA("Idée"),
-    PLANNED("Planifié"),
+enum class RunStatus(val label: String) {
     IN_PROGRESS("En cours"),
-    ON_HOLD("En pause"),
-    COMPLETED("Terminé"),
-    ARCHIVED("Archivé")
+    PAUSED("En pause"),
+    COMPLETED("Terminé")
 }

@@ -8,18 +8,13 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "finished_items",
     foreignKeys = [
-        ForeignKey(
-            entity = ProjectEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["projectId"],
-            onDelete = ForeignKey.CASCADE
-        )
+        ForeignKey(entity = RunEntity::class, parentColumns = ["id"], childColumns = ["runId"], onDelete = ForeignKey.SET_NULL),
     ],
-    indices = [Index("projectId")]
+    indices = [Index("runId")]
 )
 data class FinishedItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val projectId: Long,
+    val runId: Long? = null,
     val name: String,
     val quantity: Double = 1.0,
     val unit: String = "PIECE",

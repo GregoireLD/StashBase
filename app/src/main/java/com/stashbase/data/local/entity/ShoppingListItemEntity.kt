@@ -11,7 +11,7 @@ data class ShoppingListItemEntity(
     val quantity: Double? = null,
     val unit: String? = null,
     val isChecked: Boolean = false,
-    val sourceProjectId: Long? = null,
+    val sourceRunId: Long? = null,
     val sourceMaterialId: Long? = null,
     val createdAtMillis: Long = System.currentTimeMillis(),
 )

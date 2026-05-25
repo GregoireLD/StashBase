@@ -1,32 +1,39 @@
 package com.stashbase.data.repository
 
-import com.stashbase.data.local.dao.ProjectDao
+import com.stashbase.data.local.dao.MaterialDao
+import com.stashbase.data.local.dao.RunDao
 import com.stashbase.data.local.dao.ShoppingListDao
+import com.stashbase.data.local.entity.ShoppingListItemEntity
 import com.stashbase.data.local.entity.toDomain
 import com.stashbase.data.local.entity.toEntity
 import com.stashbase.domain.model.ShoppingListItem
 import com.stashbase.domain.repository.ShoppingListRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ShoppingListRepositoryImpl @Inject constructor(
     private val shoppingListDao: ShoppingListDao,
-    private val projectDao: ProjectDao,
+    private val runDao: RunDao,
+    private val materialDao: MaterialDao,
 ) : ShoppingListRepository {
 
-    override fun getAll(): Flow<List<ShoppingListItem>> =
-        shoppingListDao.getAll().map { entities ->
-            val projects = projectDao.getAll().first().associateBy { it.id }
-            entities.map { it.toDomain(projectName = it.sourceProjectId?.let { pid -> projects[pid]?.name }) }
-        }
+    override fun getAll(): Flow<List<ShoppingListItem>> = combine(
+        shoppingListDao.getAll(),
+        runDao.getAll(),
+    ) { entities, runs ->
+        val runById = runs.associateBy { it.id }
+        entities.map { it.toDomain(runName = it.sourceRunId?.let { id -> runById[id]?.name }) }
+    }
 
-    override fun getUnchecked(): Flow<List<ShoppingListItem>> =
-        shoppingListDao.getUnchecked().map { entities ->
-            val projects = projectDao.getAll().first().associateBy { it.id }
-            entities.map { it.toDomain(projectName = it.sourceProjectId?.let { pid -> projects[pid]?.name }) }
-        }
+    override fun getUnchecked(): Flow<List<ShoppingListItem>> = combine(
+        shoppingListDao.getUnchecked(),
+        runDao.getAll(),
+    ) { entities, runs ->
+        val runById = runs.associateBy { it.id }
+        entities.map { it.toDomain(runName = it.sourceRunId?.let { id -> runById[id]?.name }) }
+    }
 
     override suspend fun upsert(item: ShoppingListItem): Long =
         shoppingListDao.upsert(item.toEntity())
@@ -38,19 +45,26 @@ class ShoppingListRepositoryImpl @Inject constructor(
 
     override suspend fun deleteChecked() = shoppingListDao.deleteChecked()
 
-    override suspend fun generateFromProjectDeficits(projectId: Long) {
-        projectDao.getById(projectId).first() ?: return
-        val bomEntries = projectDao.getBomEntries(projectId).first()
+    override suspend fun generateFromRunDeficits(runId: Long) {
+        val run = runDao.getById(runId).first() ?: return
+        val bomEntries = runDao.getBomEntriesOnce(runId)
+        val materials = materialDao.getAll().first().associateBy { it.id }
         bomEntries.forEach { entry ->
-            val allocated = projectDao.getAllocatedQuantity(entry.materialId, excludeProjectId = projectId).first()
-            shoppingListDao.upsert(
-                com.stashbase.data.local.entity.ShoppingListItemEntity(
-                    name = "Matériau #${entry.materialId}",
-                    quantity = entry.requiredQuantity - allocated,
-                    sourceProjectId = projectId,
-                    sourceMaterialId = entry.materialId,
+            val mat = materials[entry.actualMaterialId] ?: return@forEach
+            val allocatedElsewhere = runDao.getAllocatedToOtherRuns(entry.actualMaterialId, runId)
+            val effectiveAvailable = mat.quantity - allocatedElsewhere
+            val deficit = entry.plannedQuantity - effectiveAvailable
+            if (deficit > 0) {
+                shoppingListDao.upsert(
+                    ShoppingListItemEntity(
+                        name = mat.name,
+                        quantity = deficit,
+                        unit = mat.unit,
+                        sourceRunId = runId,
+                        sourceMaterialId = entry.actualMaterialId,
+                    )
                 )
-            )
+            }
         }
     }
 }

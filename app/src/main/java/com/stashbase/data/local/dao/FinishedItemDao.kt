@@ -9,8 +9,8 @@ interface FinishedItemDao {
     @Query("SELECT * FROM finished_items ORDER BY createdAtMillis DESC")
     fun getAll(): Flow<List<FinishedItemEntity>>
 
-    @Query("SELECT * FROM finished_items WHERE projectId = :projectId ORDER BY createdAtMillis DESC")
-    fun getByProject(projectId: Long): Flow<List<FinishedItemEntity>>
+    @Query("SELECT * FROM finished_items WHERE runId = :runId ORDER BY createdAtMillis DESC")
+    fun getByRun(runId: Long): Flow<List<FinishedItemEntity>>
 
     @Query("SELECT * FROM finished_items WHERE status = :status ORDER BY createdAtMillis DESC")
     fun getByStatus(status: String): Flow<List<FinishedItemEntity>>

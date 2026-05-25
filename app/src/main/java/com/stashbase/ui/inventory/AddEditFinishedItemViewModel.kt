@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stashbase.domain.model.*
 import com.stashbase.domain.repository.FinishedItemRepository
-import com.stashbase.domain.repository.ProjectRepository
+import com.stashbase.domain.repository.RunRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -13,24 +13,23 @@ import javax.inject.Inject
 
 data class AddEditFinishedItemUiState(
     val name: String = "",
-    val projectId: Long? = null,
+    val runId: Long? = null,
     val quantity: String = "1",
     val unit: MaterialUnit = MaterialUnit.PIECE,
     val status: FinishedItemStatus = FinishedItemStatus.PERSONAL_USE,
     val sellingPrice: String = "",
     val notes: String = "",
-    val projects: List<Project> = emptyList(),
+    val runs: List<Run> = emptyList(),
     val isSaved: Boolean = false,
     val isLoading: Boolean = false,
     val nameError: Boolean = false,
-    val projectError: Boolean = false,
 )
 
 @HiltViewModel
 class AddEditFinishedItemViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val finishedItemRepository: FinishedItemRepository,
-    private val projectRepository: ProjectRepository,
+    private val runRepository: RunRepository,
 ) : ViewModel() {
 
     private val itemId: Long? = savedStateHandle.get<Long>("itemId")?.takeIf { it != -1L }
@@ -40,8 +39,8 @@ class AddEditFinishedItemViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            projectRepository.getAll().collect { projects ->
-                _state.update { it.copy(projects = projects) }
+            runRepository.getAll().collect { runs ->
+                _state.update { it.copy(runs = runs) }
             }
         }
         if (itemId != null) {
@@ -53,7 +52,7 @@ class AddEditFinishedItemViewModel @Inject constructor(
                         _state.update { current ->
                             current.copy(
                                 name = item.name,
-                                projectId = item.projectId,
+                                runId = item.runId,
                                 quantity = item.quantity.toString(),
                                 unit = item.unit,
                                 status = item.status,
@@ -76,15 +75,11 @@ class AddEditFinishedItemViewModel @Inject constructor(
             _state.update { it.copy(nameError = true) }
             return
         }
-        if (s.projectId == null) {
-            _state.update { it.copy(projectError = true) }
-            return
-        }
         viewModelScope.launch {
             finishedItemRepository.upsert(
                 FinishedItem(
                     id = itemId ?: 0L,
-                    projectId = s.projectId,
+                    runId = s.runId,
                     name = s.name.trim(),
                     quantity = s.quantity.toDoubleOrNull() ?: 1.0,
                     unit = s.unit,

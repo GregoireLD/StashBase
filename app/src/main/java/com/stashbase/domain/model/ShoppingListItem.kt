@@ -7,8 +7,8 @@ data class ShoppingListItem(
     val quantity: Double? = null,
     val unit: MaterialUnit? = null,
     val isChecked: Boolean = false,
-    val sourceProjectId: Long? = null,
-    val sourceProjectName: String? = null,
+    val sourceRunId: Long? = null,
+    val sourceRunName: String? = null,
     val sourceMaterialId: Long? = null,
     val createdAtMillis: Long = System.currentTimeMillis(),
 )
