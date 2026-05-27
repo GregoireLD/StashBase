@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.stashbase.domain.model.Blueprint
 import com.stashbase.domain.repository.BlueprintRepository
+import com.stashbase.ui.components.PhotoPickerField
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ data class AddEditBlueprintUiState(
     val description: String = "",
     val category: String = "",
     val notes: String = "",
+    val photoPath: String? = null,
     val nameError: Boolean = false,
     val isLoading: Boolean = false,
     val savedId: Long? = null,
@@ -54,6 +56,7 @@ class AddEditBlueprintViewModel @Inject constructor(
                             description = bp.description ?: "",
                             category = bp.category ?: "",
                             notes = bp.notes ?: "",
+                            photoPath = bp.photoPath,
                             isLoading = false,
                         )
                     }
@@ -78,6 +81,7 @@ class AddEditBlueprintViewModel @Inject constructor(
                     description = s.description.trim().ifBlank { null },
                     category = s.category.trim().ifBlank { null },
                     notes = s.notes.trim().ifBlank { null },
+                    photoPath = s.photoPath,
                 )
             )
             _state.update { it.copy(savedId = id) }
@@ -145,6 +149,11 @@ fun AddEditBlueprintScreen(
                 label = { Text("Description") },
                 minLines = 2,
                 modifier = Modifier.fillMaxWidth(),
+            )
+
+            PhotoPickerField(
+                photoPath = state.photoPath,
+                onPhotoChanged = { viewModel.update { copy(photoPath = it) } },
             )
 
             OutlinedTextField(

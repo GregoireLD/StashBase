@@ -11,7 +11,10 @@ import com.stashbase.ui.blueprints.BlueprintDetailScreen
 import com.stashbase.ui.blueprints.BlueprintsScreen
 import com.stashbase.ui.inventory.AddEditFinishedItemScreen
 import com.stashbase.ui.inventory.AddEditMaterialScreen
+import com.stashbase.ui.inventory.FinishedItemDetailScreen
 import com.stashbase.ui.inventory.InventoryScreen
+import com.stashbase.ui.inventory.MaterialDetailScreen
+import com.stashbase.ui.inventory.ToolDetailScreen
 import com.stashbase.ui.locations.LocationsScreen
 import com.stashbase.ui.runs.AddEditRunScreen
 import com.stashbase.ui.runs.RunDetailScreen
@@ -33,11 +36,21 @@ fun AppNavGraph(
         composable(Screen.Inventory.route) {
             InventoryScreen(
                 onAddMaterial = { navController.navigate(Screen.AddEditMaterial.createRoute()) },
-                onEditMaterial = { id -> navController.navigate(Screen.AddEditMaterial.createRoute(id)) },
+                onViewMaterial = { id -> navController.navigate(Screen.MaterialDetail.createRoute(id)) },
                 onAddTool = { navController.navigate(Screen.AddEditTool.createRoute()) },
-                onEditTool = { id -> navController.navigate(Screen.AddEditTool.createRoute(id)) },
+                onViewTool = { id -> navController.navigate(Screen.ToolDetail.createRoute(id)) },
                 onAddFinishedItem = { navController.navigate(Screen.AddEditFinishedItem.createRoute()) },
-                onEditFinishedItem = { id -> navController.navigate(Screen.AddEditFinishedItem.createRoute(id)) },
+                onViewFinishedItem = { id -> navController.navigate(Screen.FinishedItemDetail.createRoute(id)) },
+            )
+        }
+
+        composable(
+            route = Screen.MaterialDetail.route,
+            arguments = listOf(navArgument("materialId") { type = NavType.LongType }),
+        ) {
+            MaterialDetailScreen(
+                onBack = { navController.popBackStack() },
+                onEdit = { id -> navController.navigate(Screen.AddEditMaterial.createRoute(id)) },
             )
         }
 
@@ -49,6 +62,17 @@ fun AppNavGraph(
             AddEditMaterialScreen(
                 materialId = if (id == -1L) null else id,
                 onBack = { navController.popBackStack() },
+                onDeleted = { navController.popBackStack(Screen.Inventory.route, inclusive = false) },
+            )
+        }
+
+        composable(
+            route = Screen.ToolDetail.route,
+            arguments = listOf(navArgument("toolId") { type = NavType.LongType }),
+        ) {
+            ToolDetailScreen(
+                onBack = { navController.popBackStack() },
+                onEdit = { id -> navController.navigate(Screen.AddEditTool.createRoute(id)) },
             )
         }
 
@@ -60,6 +84,17 @@ fun AppNavGraph(
             com.stashbase.ui.inventory.AddEditToolScreen(
                 toolId = if (id == -1L) null else id,
                 onBack = { navController.popBackStack() },
+                onDeleted = { navController.popBackStack(Screen.Inventory.route, inclusive = false) },
+            )
+        }
+
+        composable(
+            route = Screen.FinishedItemDetail.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType }),
+        ) {
+            FinishedItemDetailScreen(
+                onBack = { navController.popBackStack() },
+                onEdit = { id -> navController.navigate(Screen.AddEditFinishedItem.createRoute(id)) },
             )
         }
 
@@ -71,6 +106,7 @@ fun AppNavGraph(
             AddEditFinishedItemScreen(
                 itemId = if (id == -1L) null else id,
                 onBack = { navController.popBackStack() },
+                onDeleted = { navController.popBackStack(Screen.Inventory.route, inclusive = false) },
             )
         }
 

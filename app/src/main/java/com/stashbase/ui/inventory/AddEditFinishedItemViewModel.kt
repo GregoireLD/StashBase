@@ -19,8 +19,10 @@ data class AddEditFinishedItemUiState(
     val status: FinishedItemStatus = FinishedItemStatus.PERSONAL_USE,
     val sellingPrice: String = "",
     val notes: String = "",
+    val photoPath: String? = null,
     val runs: List<Run> = emptyList(),
     val isSaved: Boolean = false,
+    val isDeleted: Boolean = false,
     val isLoading: Boolean = false,
     val nameError: Boolean = false,
 )
@@ -58,6 +60,7 @@ class AddEditFinishedItemViewModel @Inject constructor(
                                 status = item.status,
                                 sellingPrice = item.sellingPrice?.toString() ?: "",
                                 notes = item.notes ?: "",
+                                photoPath = item.photoPath,
                                 isLoading = false,
                             )
                         }
@@ -68,6 +71,14 @@ class AddEditFinishedItemViewModel @Inject constructor(
 
     fun update(block: AddEditFinishedItemUiState.() -> AddEditFinishedItemUiState) =
         _state.update(block)
+
+    fun delete() {
+        if (itemId == null) return
+        viewModelScope.launch {
+            finishedItemRepository.delete(itemId)
+            _state.update { it.copy(isDeleted = true) }
+        }
+    }
 
     fun save() {
         val s = _state.value
@@ -86,6 +97,7 @@ class AddEditFinishedItemViewModel @Inject constructor(
                     status = s.status,
                     sellingPrice = s.sellingPrice.toDoubleOrNull(),
                     notes = s.notes.trim().ifBlank { null },
+                    photoPath = s.photoPath,
                 )
             )
             _state.update { it.copy(isSaved = true) }

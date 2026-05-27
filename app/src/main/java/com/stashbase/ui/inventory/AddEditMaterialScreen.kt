@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,18 +17,36 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stashbase.domain.model.MaterialType
 import com.stashbase.domain.model.MaterialUnit
+import com.stashbase.ui.components.PhotoPickerField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditMaterialScreen(
     materialId: Long?,
     onBack: () -> Unit,
+    onDeleted: () -> Unit = {},
     viewModel: AddEditMaterialViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.isSaved) {
-        if (state.isSaved) onBack()
+    LaunchedEffect(state.isSaved) { if (state.isSaved) onBack() }
+    LaunchedEffect(state.isDeleted) { if (state.isDeleted) onDeleted() }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Supprimer ce matériau ?") },
+            text = { Text("Cette action est irréversible.") },
+            confirmButton = {
+                TextButton(onClick = { showDeleteDialog = false; viewModel.delete() }) {
+                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Annuler") }
+            }
+        )
     }
 
     Scaffold(
@@ -40,6 +59,11 @@ fun AddEditMaterialScreen(
                     }
                 },
                 actions = {
+                    if (materialId != null) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
                     IconButton(onClick = viewModel::save) {
                         Icon(Icons.Default.Check, contentDescription = "Enregistrer")
                     }
@@ -157,6 +181,11 @@ fun AddEditMaterialScreen(
                 onValueChange = { viewModel.update { copy(tags = it) } },
                 label = { Text("Tags (séparés par des virgules)") },
                 modifier = Modifier.fillMaxWidth(),
+            )
+
+            PhotoPickerField(
+                photoPath = state.photoPath,
+                onPhotoChanged = { viewModel.update { copy(photoPath = it) } },
             )
 
             OutlinedTextField(

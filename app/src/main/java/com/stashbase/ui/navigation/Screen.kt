@@ -13,11 +13,20 @@ sealed class Screen(val route: String) {
     data object Locations : Screen("locations")
 
     // Inventory sub-screens
+    data object MaterialDetail : Screen("material/{materialId}") {
+        fun createRoute(materialId: Long) = "material/$materialId"
+    }
     data object AddEditMaterial : Screen("material/edit/{materialId}") {
         fun createRoute(materialId: Long = -1L) = "material/edit/$materialId"
     }
+    data object ToolDetail : Screen("tool/{toolId}") {
+        fun createRoute(toolId: Long) = "tool/$toolId"
+    }
     data object AddEditTool : Screen("tool/edit/{toolId}") {
         fun createRoute(toolId: Long = -1L) = "tool/edit/$toolId"
+    }
+    data object FinishedItemDetail : Screen("finished/{itemId}") {
+        fun createRoute(itemId: Long) = "finished/$itemId"
     }
     data object AddEditFinishedItem : Screen("finished/edit/{itemId}") {
         fun createRoute(itemId: Long = -1L) = "finished/edit/$itemId"

@@ -24,8 +24,10 @@ data class AddEditMaterialUiState(
     val notes: String = "",
     val tags: String = "",
     val lowStockThreshold: String = "",
+    val photoPath: String? = null,
     val locations: List<StorageLocation> = emptyList(),
     val isSaved: Boolean = false,
+    val isDeleted: Boolean = false,
     val isLoading: Boolean = false,
     val nameError: Boolean = false,
 )
@@ -66,6 +68,7 @@ class AddEditMaterialViewModel @Inject constructor(
                             notes = m.notes ?: "",
                             tags = m.tags.joinToString(", "),
                             lowStockThreshold = m.lowStockThreshold?.toString() ?: "",
+                            photoPath = m.photoPath,
                             isLoading = false,
                         )
                     }
@@ -75,6 +78,14 @@ class AddEditMaterialViewModel @Inject constructor(
     }
 
     fun update(block: AddEditMaterialUiState.() -> AddEditMaterialUiState) = _state.update(block)
+
+    fun delete() {
+        if (materialId == null) return
+        viewModelScope.launch {
+            materialRepository.delete(materialId)
+            _state.update { it.copy(isDeleted = true) }
+        }
+    }
 
     fun save() {
         if (_state.value.name.isBlank()) {
@@ -97,6 +108,7 @@ class AddEditMaterialViewModel @Inject constructor(
                 notes = s.notes.trim().ifBlank { null },
                 tags = s.tags.split(",").map { it.trim() }.filter { it.isNotEmpty() },
                 lowStockThreshold = s.lowStockThreshold.toDoubleOrNull(),
+                photoPath = s.photoPath,
             )
             materialRepository.upsert(material)
             _state.update { it.copy(isSaved = true) }

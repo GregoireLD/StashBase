@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.stashbase.domain.model.Run
 import com.stashbase.domain.repository.RunRepository
+import com.stashbase.ui.components.PhotoPickerField
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ import javax.inject.Inject
 data class AddEditRunUiState(
     val name: String = "",
     val notes: String = "",
+    val photoPath: String? = null,
     val nameError: Boolean = false,
     val isLoading: Boolean = false,
     val savedId: Long? = null,
@@ -50,6 +52,7 @@ class AddEditRunViewModel @Inject constructor(
                         it.copy(
                             name = run.name,
                             notes = run.notes ?: "",
+                            photoPath = run.photoPath,
                             isLoading = false,
                         )
                     }
@@ -75,6 +78,7 @@ class AddEditRunViewModel @Inject constructor(
                     name = s.name.trim(),
                     status = existing?.status ?: com.stashbase.domain.model.RunStatus.IN_PROGRESS,
                     notes = s.notes.trim().ifBlank { null },
+                    photoPath = s.photoPath,
                 )
             )
             _state.update { it.copy(savedId = id) }
@@ -127,6 +131,11 @@ fun AddEditRunScreen(
                 isError = state.nameError,
                 supportingText = if (state.nameError) { { Text("Le nom est requis") } } else null,
                 modifier = Modifier.fillMaxWidth(),
+            )
+
+            PhotoPickerField(
+                photoPath = state.photoPath,
+                onPhotoChanged = { viewModel.update { copy(photoPath = it) } },
             )
 
             OutlinedTextField(

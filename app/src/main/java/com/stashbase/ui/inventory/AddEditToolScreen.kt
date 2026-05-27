@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import androidx.lifecycle.viewModelScope
 import com.stashbase.domain.model.*
 import com.stashbase.domain.repository.StorageLocationRepository
 import com.stashbase.domain.repository.ToolRepository
+import com.stashbase.ui.components.PhotoPickerField
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -31,8 +33,10 @@ data class AddEditToolUiState(
     val condition: ToolCondition = ToolCondition.GOOD,
     val locationId: Long? = null,
     val notes: String = "",
+    val photoPath: String? = null,
     val locations: List<StorageLocation> = emptyList(),
     val isSaved: Boolean = false,
+    val isDeleted: Boolean = false,
     val nameError: Boolean = false,
 )
 
@@ -65,6 +69,7 @@ class AddEditToolViewModel @Inject constructor(
                             condition = t.condition,
                             locationId = t.locationId,
                             notes = t.notes ?: "",
+                            photoPath = t.photoPath,
                         )
                     }
                 }
@@ -73,6 +78,14 @@ class AddEditToolViewModel @Inject constructor(
     }
 
     fun update(block: AddEditToolUiState.() -> AddEditToolUiState) = _state.update(block)
+
+    fun delete() {
+        if (toolId == null) return
+        viewModelScope.launch {
+            toolRepository.delete(toolId)
+            _state.update { it.copy(isDeleted = true) }
+        }
+    }
 
     fun save() {
         if (_state.value.name.isBlank()) { _state.update { it.copy(nameError = true) }; return }
@@ -88,6 +101,7 @@ class AddEditToolViewModel @Inject constructor(
                     condition = s.condition,
                     locationId = s.locationId,
                     notes = s.notes.trim().ifBlank { null },
+                    photoPath = s.photoPath,
                 )
             )
             _state.update { it.copy(isSaved = true) }
@@ -100,12 +114,29 @@ class AddEditToolViewModel @Inject constructor(
 fun AddEditToolScreen(
     toolId: Long?,
     onBack: () -> Unit,
+    onDeleted: () -> Unit = {},
     viewModel: AddEditToolViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.isSaved) {
-        if (state.isSaved) onBack()
+    LaunchedEffect(state.isSaved) { if (state.isSaved) onBack() }
+    LaunchedEffect(state.isDeleted) { if (state.isDeleted) onDeleted() }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Supprimer cet outil ?") },
+            text = { Text("Cette action est irréversible.") },
+            confirmButton = {
+                TextButton(onClick = { showDeleteDialog = false; viewModel.delete() }) {
+                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Annuler") }
+            }
+        )
     }
 
     Scaffold(
@@ -118,6 +149,11 @@ fun AddEditToolScreen(
                     }
                 },
                 actions = {
+                    if (toolId != null) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
                     IconButton(onClick = viewModel::save) {
                         Icon(Icons.Default.Check, contentDescription = "Enregistrer")
                     }
@@ -190,6 +226,11 @@ fun AddEditToolScreen(
                     }
                 }
             }
+
+            PhotoPickerField(
+                photoPath = state.photoPath,
+                onPhotoChanged = { viewModel.update { copy(photoPath = it) } },
+            )
 
             OutlinedTextField(
                 value = state.notes,

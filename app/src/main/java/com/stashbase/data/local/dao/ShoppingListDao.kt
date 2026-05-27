@@ -23,4 +23,7 @@ interface ShoppingListDao {
 
     @Query("DELETE FROM shopping_list_items WHERE isChecked = 1")
     suspend fun deleteChecked()
+
+    @Query("SELECT * FROM shopping_list_items WHERE isChecked = 1")
+    suspend fun getChecked(): List<ShoppingListItemEntity>
 }
